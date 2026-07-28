@@ -48,6 +48,19 @@ export default function App() {
       const room = new Room();
       livekitRoomRef.current = room;
       room.on(RoomEvent.Disconnected, () => setVoiceStatus("déconnecté"));
+
+      room.on(RoomEvent.TrackSubscribed, (track) => {
+        if (track.kind === "audio") {
+          const el = track.attach();
+          el.autoplay = true;
+          el.dataset.livekitAudio = "true";
+          document.body.appendChild(el);
+        }
+      });
+      room.on(RoomEvent.TrackUnsubscribed, (track) => {
+        track.detach().forEach((el) => el.remove());
+      });
+
       await room.connect(data.livekitUrl, data.token);
       const track = await createLocalAudioTrack();
       await room.localParticipant.publishTrack(track);
