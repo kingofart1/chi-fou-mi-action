@@ -71,11 +71,9 @@ function resolvePfcRound(room) {
     return; // égalité totale, on relance la manche sans changer de phase
   }
 
+ const BEATS = { pierre: "ciseaux", feuille: "pierre", ciseaux: "feuille" };
   const loserIds = entries
-    .filter(([, key]) => {
-      const move = PFC.find((c) => c.key === key);
-      return entries.some(([, otherKey]) => otherKey === move.beats);
-    })
+    .filter(([, key]) => entries.some(([, otherKey]) => BEATS[otherKey] === key))
     .map(([id]) => id);
 
   if (loserIds.length === 0 || loserIds.length === entries.length) {
