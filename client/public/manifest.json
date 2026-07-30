@@ -1,0 +1,14 @@
+{
+  "name": "Chi-Fou-Mi Action",
+  "short_name": "CFA",
+  "description": "Jeu multijoueur Pierre-Feuille-Ciseaux + Action ou Vérité",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#0d0620",
+  "theme_color": "#7b2ff7",
+  "orientation": "portrait",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" }
+  ]
+}
