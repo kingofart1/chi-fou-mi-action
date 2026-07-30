@@ -49,6 +49,7 @@ function publicState(room) {
     consequenceText: room.consequenceText,
     // On expose seulement QUI a déjà joué/voté, jamais le contenu avant résolution
     pfcSubmittedCount: Object.keys(room.pfcChoices).length,
+    tie: !!room.tie,
     votesSubmittedCount: room.votes.length,
     revealChoices:
       room.phase === "pfc-reveal"
@@ -68,16 +69,18 @@ function resolvePfcRound(room) {
 
   if (uniqueChoices.size === 1) {
     room.pfcChoices = {};
+    room.tie = true;
     return; // égalité totale, on relance la manche sans changer de phase
   }
 
- const BEATS = { pierre: "ciseaux", feuille: "pierre", ciseaux: "feuille" };
+  const BEATS = { pierre: "ciseaux", feuille: "pierre", ciseaux: "feuille" };
   const loserIds = entries
     .filter(([, key]) => entries.some(([, otherKey]) => BEATS[otherKey] === key))
     .map(([id]) => id);
 
   if (loserIds.length === 0 || loserIds.length === entries.length) {
     room.pfcChoices = {};
+    room.tie = true;
     return; // égalité fonctionnelle, on relance
   }
 
@@ -135,8 +138,8 @@ io.on("connection", (socket) => {
     if (Object.keys(room.pfcChoices).length === room.players.length) {
       resolvePfcRound(room);
       if (room.phase !== "pfc-reveal") {
-        // égalité : on redémarre discrètement la manche
         broadcastState(code);
+        room.tie = false;
         return;
       }
     }
