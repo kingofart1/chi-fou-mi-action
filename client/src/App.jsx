@@ -49,6 +49,7 @@ export default function App() {
       livekitRoomRef.current = room;
       room.on(RoomEvent.Disconnected, () => setVoiceStatus("déconnecté"));
 
+      // Joue l'audio des autres participants dès qu'il est reçu
       room.on(RoomEvent.TrackSubscribed, (track) => {
         if (track.kind === "audio") {
           const el = track.attach();
@@ -81,22 +82,26 @@ export default function App() {
   }
 
   function createRoom() {
-    if (!myName.trim()) return;
-    socketRef.current.emit("create-room", { name: myName.trim(), mode }, (res) => {
+    const cleanName = myName.trim();
+    if (!cleanName) return;
+    setMyName(cleanName);
+    socketRef.current.emit("create-room", { name: cleanName, mode }, (res) => {
       if (!res.ok) return setError(res.error || "Erreur");
       setCode(res.code);
       setScreen("game");
-      connectVoice(res.code, myName.trim());
+      connectVoice(res.code, cleanName);
     });
   }
 
   function joinRoom() {
-    if (!myName.trim() || !joinCode.trim()) return;
-    socketRef.current.emit("join-room", { code: joinCode.trim(), name: myName.trim() }, (res) => {
+    const cleanName = myName.trim();
+    if (!cleanName || !joinCode.trim()) return;
+    setMyName(cleanName);
+    socketRef.current.emit("join-room", { code: joinCode.trim(), name: cleanName }, (res) => {
       if (!res.ok) return setError(res.error || "Erreur");
       setCode(res.code);
       setScreen("game");
-      connectVoice(res.code, myName.trim());
+      connectVoice(res.code, cleanName);
     });
   }
 
@@ -126,8 +131,6 @@ export default function App() {
     roomState && roomState.losers.length
       ? roomState.losers[roomState.activeLoserIdx] === myName
       : false;
-
-  const iHaveSubmittedPfc = roomState && roomState.phase === "pfc"; // affichage géré par pfcSubmittedCount
 
   return (
     <div style={styles.page}>
@@ -205,6 +208,11 @@ export default function App() {
 
             {roomState.phase === "pfc" && (
               <div style={styles.center}>
+                {roomState.tie && (
+                  <p style={{ color: "#ff2d95", fontWeight: 700, marginBottom: 10 }}>
+                    Égalité ! Rejouez la manche 🔁
+                  </p>
+                )}
                 <p style={styles.subtitle}>
                   {roomState.pfcSubmittedCount}/{roomState.players.length} ont choisi
                 </p>
